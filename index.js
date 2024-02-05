@@ -157,6 +157,13 @@ async function updateEmployeeRole() {
         },
     ]);
 
+    //checking to see if role id exists first
+    const [roleExists] = await connection.query('SELECT id FROM role WHERE id = ?', [newRoleId]);
+    if (!roleExists.length) {
+        console.log('Role ID does not exist. Please try again.');
+        return;
+    }
+
     await connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
     console.log('Employee role updated successfully.');
 }
