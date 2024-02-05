@@ -30,13 +30,13 @@ async function startApp() {
 
         switch (action) {
             case 'View all departments':
-                viewDepartments();
+                viewAllDepartments();
                 break;
             case 'View all roles':
-                viewRoles();
+                viewAllRoles();
                 break;
             case 'View all employees':
-                viewEmployees();
+                viewAllEmployees();
                 break;
             case 'Add a department':
                 addDepartment();
@@ -48,7 +48,7 @@ async function startApp() {
                 addEmployee();
                 break;
             case 'Update an employee role':
-                updateEmployee();
+                updateEmployeeRole();
                 break;
             case 'Exit':
                 console.log('Goodbye!');
