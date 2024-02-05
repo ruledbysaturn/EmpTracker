@@ -63,17 +63,17 @@ async function startApp() {
 }
 
 async function viewAllDepartments() {
-    const [rows, fields] = await pool.query('SELECT * FROM department');
+    const [rows, fields] = await connection.query('SELECT * FROM department');
     console.table(rows);
 }
 
 async function viewAllRoles() {
-    const [rows, fields] = await pool.query('SELECT * FROM role');
+    const [rows, fields] = await connection.query('SELECT * FROM role');
     console.table(rows);
 }
 
 async function viewAllEmployees() {
-    const [rows, fields] = await pool.query('SELECT * FROM employee');
+    const [rows, fields] = await connection.query('SELECT * FROM employee');
     console.table(rows);
 }
 
@@ -83,7 +83,7 @@ async function addDepartment() {
         name: 'departmentName',
         message: 'What is the name of the department?',
     });
-    await pool.query(`INSERT INTO department (name) VALUES (?)`, [departmentName]);
+    await connection.query(`INSERT INTO department (name) VALUES (?)`, [departmentName]);
     console.log('Department added successfully!');
 }
 
@@ -106,7 +106,7 @@ async function addRole() {
         },
     ]);
 
-    await pool.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, departmentId]);
+    await connection.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, departmentId]);
     console.log('Role added successfully!');
 }
 
@@ -134,7 +134,7 @@ async function addEmployee() {
         },
     ]);
 
-    await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [
+    await connection.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [
         firstName,
         lastName,
         roleId,
@@ -143,7 +143,7 @@ async function addEmployee() {
       console.log('Employee added successfully.');
     }
 
-async function updateEmployee() {
+async function updateEmployeeRole() {
     const { employeeId, newRoleId } = await inquirer.prompt([
         {
             type: 'input',
@@ -157,6 +157,7 @@ async function updateEmployee() {
         },
     ]);
 
-    await pool.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
+    await connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
     console.log('Employee role updated successfully.');
 }
+
