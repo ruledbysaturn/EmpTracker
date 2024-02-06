@@ -1,6 +1,5 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const db = require('./db');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -10,9 +9,20 @@ const connection = mysql.createConnection({
     database: 'employee_db'
 });
 
+connection.connect((err) => {
+    if (err) {
+        console.error('Error connecting to the database:', err);
+        return;
+    }
+    console.log('Connected to the database!');
+   
+    startApp();
+});
+
 async function startApp() {
+    console.log('Starting the application...');
     try {
-        const { action } = await inquirer.createPromptModule({
+        const { action } = await inquirer.prompt({
             name: 'action',
             type: 'list',
             message: 'What would you like to do?',
@@ -53,13 +63,14 @@ async function startApp() {
             case 'Exit':
                 console.log('Goodbye!');
                 connection.end();
-                break;
+                return;
         }
 
-        startApp();
+    
     } catch (err) {
         console.error(err);
     }
+    startApp();
 }
 
 async function viewAllDepartments() {
@@ -157,7 +168,7 @@ async function updateEmployeeRole() {
         },
     ]);
 
-    //checking to see if role id exists first
+    //checking to see if role id exists
     const [roleExists] = await connection.query('SELECT id FROM role WHERE id = ?', [newRoleId]);
     if (!roleExists.length) {
         console.log('Role ID does not exist. Please try again.');
@@ -167,4 +178,3 @@ async function updateEmployeeRole() {
     await connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
     console.log('Employee role updated successfully.');
 }
-
