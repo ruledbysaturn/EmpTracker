@@ -29,5 +29,5 @@ Employee Tracker is a simple command-line application that allows users to manag
 - Inquirer.js
 - MySQL2
 
-# [WALKTHROUGH VIDEO]()
+# [WALKTHROUGH VIDEO](https://drive.google.com/file/d/1wLZKKIPq5254AGwHnLImIvUJ_JIS0COW/view)
 
