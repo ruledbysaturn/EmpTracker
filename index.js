@@ -1,26 +1,25 @@
 const inquirer = require('inquirer');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'Beau123!',
-    database: 'employee_db'
-});
+(async () => {
+    try {
+        const connection = await mysql.createConnection({
+            host: 'localhost',
+            port: 3306,
+            user: 'root',
+            password: 'Beau123!',
+            database: 'employee_db'
+        });
 
-connection.connect((err) => {
-    if (err) {
+        console.log('Connected to the database!');
+
+        await startApp(connection);
+    } catch (err) {
         console.error('Error connecting to the database:', err);
-        return;
     }
-    console.log('Connected to the database!');
-   
-    startApp();
-});
+})();
 
-async function startApp() {
-    console.log('Starting the application...');
+async function startApp(connection) {
     try {
         const { action } = await inquirer.prompt({
             name: 'action',
@@ -37,28 +36,29 @@ async function startApp() {
                 'Exit'
             ]
         });
+        console.log('selected action:', action);
 
         switch (action) {
             case 'View all departments':
-                viewAllDepartments();
+                viewAllDepartments(connection);
                 break;
             case 'View all roles':
-                viewAllRoles();
+                viewAllRoles(connection);
                 break;
             case 'View all employees':
-                viewAllEmployees();
+                viewAllEmployees(connection);
                 break;
             case 'Add a department':
-                addDepartment();
+                await addDepartment(connection);
                 break;
             case 'Add a role':
-                addRole();
+                await addRole(connection);
                 break;
             case 'Add an employee':
-                addEmployee();
+                await addEmployee(connection);
                 break;
             case 'Update an employee role':
-                updateEmployeeRole();
+                await updateEmployeeRole(connection);
                 break;
             case 'Exit':
                 console.log('Goodbye!');
@@ -70,35 +70,39 @@ async function startApp() {
     } catch (err) {
         console.error(err);
     }
-    startApp();
+    await startApp(connection);
 }
 
-async function viewAllDepartments() {
-    const [rows, fields] = await connection.query('SELECT * FROM department');
+async function viewAllDepartments(connection) {
+    
+    const [rows, fields] = await connection.execute('SELECT * FROM department');
     console.table(rows);
 }
 
-async function viewAllRoles() {
-    const [rows, fields] = await connection.query('SELECT * FROM role');
+async function viewAllRoles(connection) {
+
+    const [rows, fields] = await connection.execute('SELECT * FROM role');
     console.table(rows);
 }
 
-async function viewAllEmployees() {
-    const [rows, fields] = await connection.query('SELECT * FROM employee');
+async function viewAllEmployees(connection) {
+    const [rows, fields] = await connection.execute('SELECT * FROM employee');
     console.table(rows);
 }
 
-async function addDepartment() {
-    const { departmentName } = await inquirer.createPromptModule({
+async function addDepartment(connection) {
+
+    const { departmentName } = await inquirer.prompt({
         type: 'input',
         name: 'departmentName',
         message: 'What is the name of the department?',
     });
-    await connection.query(`INSERT INTO department (name) VALUES (?)`, [departmentName]);
+    await connection.execute(`INSERT INTO department (name) VALUES (?)`, [departmentName]);
     console.log('Department added successfully!');
 }
 
-async function addRole() {
+async function addRole(connection) {
+
     const { title, salary, departmentId } = await inquirer.prompt([
         {
             type: 'input',
@@ -117,11 +121,12 @@ async function addRole() {
         },
     ]);
 
-    await connection.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, departmentId]);
+    await connection.execute(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, departmentId]);
     console.log('Role added successfully!');
 }
 
-async function addEmployee() {
+async function addEmployee(connection) {
+    
     const { firstName, lastName, roleId, managerId } = await inquirer.prompt([
         {
             type: 'input',
@@ -145,7 +150,7 @@ async function addEmployee() {
         },
     ]);
 
-    await connection.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [
+    await connection.execute('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [
         firstName,
         lastName,
         roleId,
@@ -154,7 +159,8 @@ async function addEmployee() {
       console.log('Employee added successfully.');
     }
 
-async function updateEmployeeRole() {
+async function updateEmployeeRole(connection) {
+    console.log('update role...');
     const { employeeId, newRoleId } = await inquirer.prompt([
         {
             type: 'input',
@@ -169,12 +175,12 @@ async function updateEmployeeRole() {
     ]);
 
     //checking to see if role id exists
-    const [roleExists] = await connection.query('SELECT id FROM role WHERE id = ?', [newRoleId]);
+    const [roleExists] = await connection.execute('SELECT id FROM role WHERE id = ?', [newRoleId]);
     if (!roleExists.length) {
         console.log('Role ID does not exist. Please try again.');
         return;
     }
 
-    await connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
+    await connection.execute('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
     console.log('Employee role updated successfully.');
 }
